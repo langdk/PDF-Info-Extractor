@@ -5,6 +5,7 @@
 *.obj
 *.class
 *.exe
+*.txt
 
 ### Gradle ###
 .gradle
