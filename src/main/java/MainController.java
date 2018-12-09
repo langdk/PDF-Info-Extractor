@@ -36,6 +36,31 @@ public class MainController extends Application {
         pdfPath.setText(selectedFile.toString());
     }
 
+    public void extractSinglePageEachTime(){
+        HashMap<Integer, String> pageInfo = new HashMap<>();
+
+
+        String pages;
+        String info;
+        int occurrences = 0;
+        String [] results = {};
+        try {
+            PDDocument document = PDDocument.load(selectedFile);
+            PDFTextStripper pdfTextStripper = new PDFTextStripper();
+            for (int i = 0; i<document.getNumberOfPages(); i++){
+                pdfTextStripper.setStartPage(i);
+                pdfTextStripper.setEndPage(i);
+                pages = pdfTextStripper.getText(document);
+                results = pages.split("\\s+");
+                for (int j =0; j<results.length; j++){
+                    extractIdentifiers.extractManufacture(results);
+                }
+            }
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
     public void extract() {
         HashMap<Integer, String> pageInfo = new HashMap<>();
 
@@ -48,15 +73,13 @@ public class MainController extends Application {
         try{
             PDDocument document = PDDocument.load(selectedFile);
             PDFTextStripper pdfTextStripper = new PDFTextStripper();
-
-
             pages = pdfTextStripper.getText(document);
             results = pages.split("\\s+");
-            //extractWebsite(results);
+            extractIdentifiers.extractWebsite(results);
             //extractManufacture(results);
             //extractPrefer(results);
             //extractIdentifiers.extractPhoneInformation(results);
-            extractIdentifiers.extractEmail(results);
+            //extractIdentifiers.extractEmail(results);
 
             //System.out.println(results.length);
 

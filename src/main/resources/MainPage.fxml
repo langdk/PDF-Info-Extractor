@@ -20,6 +20,7 @@
             <Label layoutX="14.0" layoutY="6.0" text="Path to PDF" />
             <JFXTextField fx:id="pdfPath" layoutX="92.0" prefHeight="25.0" prefWidth="394.0" />
             <JFXButton layoutX="501.0" layoutY="4.0" onAction="#fileChooser" text="Open File" />
+            <JFXButton layoutX="515.0" layoutY="41.0" onAction="#extractSinglePageEachTime" text="Extract Single" />
       </children>
     </AnchorPane>
   </children>
