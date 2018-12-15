@@ -1,26 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXTabPane?>
 <?import com.jfoenix.controls.JFXTextField?>
+<?import com.jfoenix.controls.JFXTreeTableView?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<VBox prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MainController">
+<VBox prefHeight="600.0" prefWidth="700.0" stylesheets="@darktheme.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MainController">
   <children>
     <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
       <children>
-        <Label alignment="CENTER" layoutX="155.0" layoutY="177.0" style="&#10;" text="Drag components from Library here…" textAlignment="CENTER" textFill="#9f9f9f" wrapText="false">
-          <font>
-            <Font size="18.0" />
-          </font>
-        </Label>
-            <JFXButton layoutX="570.0" layoutY="4.0" onAction="#extract" text="Extract" />
-            <Label layoutX="14.0" layoutY="6.0" text="Path to PDF" />
-            <JFXTextField fx:id="pdfPath" layoutX="92.0" prefHeight="25.0" prefWidth="394.0" />
-            <JFXButton layoutX="501.0" layoutY="4.0" onAction="#fileChooser" text="Open File" />
-            <JFXButton layoutX="515.0" layoutY="41.0" onAction="#extractSinglePageEachTime" text="Extract Single" />
+            <BorderPane prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0">
+               <center>
+                  <JFXTabPane BorderPane.alignment="CENTER">
+                     <tabs>
+                        <Tab text="Main Information">
+                          <content>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <children>
+                                    <JFXTreeTableView fx:id="keyInfoTable" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                 </children>
+                              </AnchorPane>
+                          </content>
+                        </Tab>
+                        <Tab text="Highlighted Information">
+                           <content>
+                              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                           </content>
+                        </Tab>
+                     </tabs>
+                  </JFXTabPane>
+               </center>
+               <bottom>
+                  <HBox prefHeight="49.0" prefWidth="700.0" BorderPane.alignment="CENTER">
+                     <children>
+                        <JFXButton onAction="#extractSinglePageEachTime" prefHeight="45.0" prefWidth="144.0" text="Export to PDF" translateY="2.0" />
+                        <JFXButton layoutX="10.0" layoutY="10.0" onAction="#extractSinglePageEachTime" prefHeight="45.0" prefWidth="153.0" text="Custom Search" translateY="2.0" />
+                     </children>
+                  </HBox>
+               </bottom>
+            </BorderPane>
+            <JFXButton layoutX="563.0" layoutY="4.0" onAction="#extract" prefHeight="39.0" prefWidth="92.0" text="Extract" />
+            <Label layoutX="14.0" layoutY="15.0" text="Filter" textFill="#b2b2b2" />
+            <JFXTextField fx:id="input" layoutX="92.0" prefHeight="37.0" prefWidth="348.0" />
+            <JFXButton layoutX="465.0" layoutY="4.0" onAction="#fileChooser" prefHeight="27.0" prefWidth="92.0" text="Open File" />
       </children>
     </AnchorPane>
   </children>
