@@ -24,9 +24,6 @@
 .button{
     -fx-text-fill: -fx-primarytext;
     -fx-background-color: -fx-primary;
-    -fx-border-color: -fx-secondary;
-    -fx-border-radius: 20px;
-    -fx-background-radius: 20px;
     -fx-font-size: 12pt;
 }
 
@@ -300,10 +297,4 @@
     -fx-background-color: transparent;
     -fx-text-fill: -fx-secondary;
     -fx-font-size: 12pt;
-}
-
-/*Hamburger*/
-.jfx-hamburger StackPane {
-    -fx-background-color: -fx-secondary;
-    -fx-border-radius : 5px;
 }

@@ -17,7 +17,7 @@ public class Main extends Application {
         URL myFxmlURL = ClassLoader.getSystemResource("MainPage.fxml");
         FXMLLoader loader = new FXMLLoader(myFxmlURL);
         Parent root = loader.load(myFxmlURL);
-        Scene scene = new Scene(root, 700, 600);
+        Scene scene = new Scene(root, 1000, 900);
         primaryStage.setResizable(false);
         primaryStage.setTitle("PDF Extractor");
         primaryStage.setScene(scene);
@@ -26,6 +26,5 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         launch(args);
-
     }
 }

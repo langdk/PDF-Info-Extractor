@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXDrawer?>
+<?import com.jfoenix.controls.JFXHamburger?>
 <?import com.jfoenix.controls.JFXTabPane?>
 <?import com.jfoenix.controls.JFXTextField?>
 <?import com.jfoenix.controls.JFXTreeTableView?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<VBox prefHeight="600.0" prefWidth="700.0" stylesheets="@darktheme.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MainController">
+<VBox prefHeight="900.0" prefWidth="1000.0" stylesheets="@darktheme.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MainController">
   <children>
-    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
+    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefWidth="1000.0" VBox.vgrow="ALWAYS">
       <children>
             <BorderPane prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0">
                <center>
@@ -39,16 +43,33 @@
                <bottom>
                   <HBox prefHeight="49.0" prefWidth="700.0" BorderPane.alignment="CENTER">
                      <children>
-                        <JFXButton onAction="#extractSinglePageEachTime" prefHeight="45.0" prefWidth="144.0" text="Export to PDF" translateY="2.0" />
-                        <JFXButton layoutX="10.0" layoutY="10.0" onAction="#extractSinglePageEachTime" prefHeight="45.0" prefWidth="153.0" text="Custom Search" translateY="2.0" />
+                        <JFXButton prefHeight="45.0" prefWidth="144.0" text="Export" translateY="2.0" />
+                        <JFXButton layoutX="10.0" layoutY="10.0" prefHeight="45.0" prefWidth="153.0" text="Custom Search" translateY="2.0" />
                      </children>
                   </HBox>
                </bottom>
             </BorderPane>
             <JFXButton layoutX="563.0" layoutY="4.0" onAction="#extract" prefHeight="39.0" prefWidth="92.0" text="Extract" />
-            <Label layoutX="14.0" layoutY="15.0" text="Filter" textFill="#b2b2b2" />
+            <Label layoutX="15.0" layoutY="9.0" text="Filter" textFill="#b2b2b2">
+               <font>
+                  <Font size="24.0" />
+               </font></Label>
             <JFXTextField fx:id="input" layoutX="92.0" prefHeight="37.0" prefWidth="348.0" />
             <JFXButton layoutX="465.0" layoutY="4.0" onAction="#fileChooser" prefHeight="27.0" prefWidth="92.0" text="Open File" />
+            <HBox layoutX="793.0" prefHeight="100.0" prefWidth="200.0" AnchorPane.bottomAnchor="850.0" AnchorPane.leftAnchor="875.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+               <children>
+                  <JFXHamburger fx:id="hamburger" prefHeight="28.0" prefWidth="188.0">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                  </JFXHamburger>
+               </children>
+            </HBox>
+            <AnchorPane prefHeight="298.0" prefWidth="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="100.0">
+               <children>
+                  <JFXDrawer fx:id="drawer" alignment="TOP_RIGHT" direction="RIGHT" layoutX="209.0" overLayVisible="false" prefHeight="42.0" prefWidth="0.0" resizeContent="true" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0" />
+               </children>
+            </AnchorPane>
       </children>
     </AnchorPane>
   </children>
