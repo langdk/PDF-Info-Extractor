@@ -19,17 +19,17 @@ import javafx.scene.control.TreeTableView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.nibor.autolink.LinkExtractor;
+import org.nibor.autolink.LinkSpan;
+import org.nibor.autolink.LinkType;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.text.MessageFormat;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class MainController implements Initializable {
@@ -44,6 +44,12 @@ public class MainController implements Initializable {
     @FXML
     JFXTextField input;
 
+    private final String phonePatternTest = "\\s*(?:\\+?(\\d{1,3}))?[-|− (]*(\\d{3})[-|−. )]*(\\d{3})[-|−. ]*(\\d{4})(?: *x(\\d+))?\\s*";
+    public final String emailPatternTest = "(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])";
+    private final String webPattern = "(http:\\/\\/www\\.|https:\\/\\/www\\.|http:\\/\\/|https:\\/\\/)?[A-Za-z0-9]+([\\-|−\\.]{1}[A-Za-z0-9]+)*\\.(com|net|org|gov|io|us)";
+    private final String webPatternTest = "(?:^|[\\W])((ht|f)tp(s?):\\/\\/|www\\.)"
+            + "(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*"
+            + "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)";
     File selectedFile;
     private final int TABLE_COLUMN_SIZE = 230;
 
@@ -51,6 +57,7 @@ public class MainController implements Initializable {
     //MainInformationItems items = new MainInformationItems("test", "test", "test");
     StageHelper helper = new StageHelper();
     private List<String> emailAddress = new ArrayList<>();
+    private List<String> phoneNumbers = new ArrayList<>();
     public ObservableList<MainInformationItems> data = FXCollections.observableArrayList();
 
     @Override
@@ -130,7 +137,37 @@ public class MainController implements Initializable {
                 new FileChooser.ExtensionFilter("pdf", "*.pdf")
         );
         selectedFile = fileChooser.showOpenDialog(null);
-        helper.slidingAlert("Success", "PDF Loaded Successfully, click extract to view information");
+        if(selectedFile!=null) {
+            helper.slidingAlert("Success", "PDF loaded successfully, click extract to view information");
+        }
+        else {
+            helper.slidingAlert("Failure","Invalid/no file was selected");
+        }
+    }
+
+    public void test(List<String> test){
+
+            //List<String> lines = IOUtils.readLines(new FileReader(selectedFile));
+            LinkExtractor linkExtractor = LinkExtractor.builder()
+                    .linkTypes(EnumSet.of(LinkType.URL, LinkType.WWW))
+                    .build();
+            test.forEach((String line) -> {
+                Iterable<LinkSpan> links = linkExtractor.extractLinks(line);
+                for (LinkSpan link : links) {
+                    System.out.println(MessageFormat.format("{0} : {1}", link.getType(), line.substring(link.getBeginIndex(), link.getEndIndex())));
+                }
+            });
+    }
+    public void test2(List<String> test){
+        LinkExtractor linkExtractor = LinkExtractor.builder()
+                .linkTypes(EnumSet.of(LinkType.EMAIL))
+                .build();
+        test.forEach((String line) -> {
+            Iterable<LinkSpan> links = linkExtractor.extractLinks(line);
+            for (LinkSpan link : links) {
+                System.out.println(MessageFormat.format("{0} : {1}", link.getType(), line.substring(link.getBeginIndex(), link.getEndIndex())));
+            }
+        });
     }
 
     public void extractSinglePageEachTime(){
@@ -171,6 +208,19 @@ public class MainController implements Initializable {
             PDDocument document = PDDocument.load(selectedFile);
             PDFTextStripper pdfTextStripper = new PDFTextStripper();
             pages = pdfTextStripper.getText(document);
+            results = pages.split("\\s+");
+            List<String> listInfo = Arrays.asList(results);
+            //test(listInfo);
+            test2(listInfo);
+
+//            extractIdentifiers.test(pages);
+//            for (String x :extractIdentifiers.extractPhoneTest(pages, phoneNumbers, webPatternTest)){
+//                System.out.println(x);
+//            }
+//            for (String x:extractIdentifiers.extractPhoneTest(pages, phoneNumbers, webPattern)){
+//                System.out.println(x);
+//            }
+
 
             //data = FXCollections.observableArrayList(extractIdentifiers.extractTest(pages, extractIdentifiers.emailPatternTest, emailAddress));
 //            extractIdentifiers.extractPhoneTest(pages);
