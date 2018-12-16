@@ -1,5 +1,3 @@
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import com.jfoenix.controls.*;
 import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
 import javafx.application.Platform;
@@ -31,6 +29,7 @@ import org.nibor.autolink.LinkExtractor;
 import org.nibor.autolink.LinkSpan;
 import org.nibor.autolink.LinkType;
 
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.geom.Rectangle2D;
 import java.io.*;
 import java.net.URL;
@@ -383,6 +382,13 @@ public class MainController implements Initializable {
      * Saves to Excel sheet
      */
     public void saveAs() {
+        FileChooser fileChooserSave = new FileChooser();
+        fileChooserSave.setTitle("Save File");
+        fileChooserSave.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Excel", "*.xlsx"));
+
+
+
         String[] columns = {"Phone Number", "E-mail Address", "Website"}; //Number of columns in tableview
         int rowNum = 1;
         Workbook workbook = new XSSFWorkbook();
@@ -414,10 +420,9 @@ public class MainController implements Initializable {
             sheet.autoSizeColumn(i);
         }
         try {
-            FileOutputStream fileOut = new FileOutputStream("main-highlights.xlsx");
+            FileOutputStream fileOut = new FileOutputStream(fileChooserSave.showSaveDialog(null));
             workbook.write(fileOut);
             fileOut.close();
-
             // Closing the workbook
             workbook.close();
         }catch (IOException e){
@@ -430,6 +435,11 @@ public class MainController implements Initializable {
      * Saves as excel sheet
      */
     public void saveHighlighted(){
+
+        FileChooser fileChooserSave = new FileChooser();
+        fileChooserSave.setTitle("Save File");
+        fileChooserSave.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Excel", "*.xlsx"));
         String[] columns = {"Pages", "Highlighted Text"}; //Number of columns in tableview
         int rowNum = 1;
         Workbook workbook = new XSSFWorkbook();
@@ -460,7 +470,7 @@ public class MainController implements Initializable {
             sheet.autoSizeColumn(i);
         }
         try {
-            FileOutputStream fileOut = new FileOutputStream("text-highlights.xlsx");
+            FileOutputStream fileOut = new FileOutputStream(fileChooserSave.showSaveDialog(null));
             workbook.write(fileOut);
             fileOut.close();
 

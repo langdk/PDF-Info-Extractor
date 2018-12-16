@@ -17,7 +17,6 @@ dependencies {
     compile group: 'org.controlsfx', name: 'controlsfx', version: '8.40.14'
     compile group: 'org.nibor.autolink', name: 'autolink', version: '0.10.0'
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
-    compile group: 'com.google.guava', name: 'guava', version: '11.0.2'
     compile "org.apache.poi:poi-ooxml:3.17"
 }
 
