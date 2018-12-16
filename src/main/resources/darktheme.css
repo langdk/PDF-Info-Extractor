@@ -25,8 +25,6 @@
     -fx-text-fill: -fx-primarytext;
     -fx-background-color: -fx-primary;
     -fx-border-color: -fx-secondary;
-    -fx-border-radius: 20px;
-    -fx-background-radius: 20px;
     -fx-font-size: 12pt;
 }
 
@@ -98,14 +96,10 @@
 }
 
 
-
 /*Toolbar buttons*/
 .toolbar-button
 {
-    -fx-border-color: transparent;
     -fx-background-color: derive(-fx-primary, 10%);
-    -fx-background-radius: 0px;
-    -fx-border-radius: 0px;
 }
 .toolbar-button:hover
 {
@@ -175,7 +169,7 @@
 /*TableView Default*/
 .tree-table-view{
     -fx-background-color: derive(-fx-primary, 10%);
-    -fx-font-size: 16px; 
+    -fx-font-size: 16px;
     -fx-border-color: derive(-fx-secondary, -60%);
 }
 .tree-table-view:focused{
@@ -206,7 +200,7 @@
     -fx-table-cell-border-color: transparent;
 }
 .tree-table-column{
-    -fx-alignment: CENTER;  
+    -fx-alignment: CENTER;
 }
 .tree-table-row-cell:even{
     -fx-background-color: derive(-fx-primary, 10%);
@@ -224,13 +218,13 @@
 }
 .table-view > .virtual-flow > .scroll-bar:vertical,
 .table-view > .virtual-flow > .scroll-bar:vertical > .track,
-.table-view > .virtual-flow > .scroll-bar:vertical > .track-background, 
+.table-view > .virtual-flow > .scroll-bar:vertical > .track-background,
 .table-view > .virtual-flow > .scroll-bar:horizontal,
 .table-view > .virtual-flow > .scroll-bar:horizontal > .track,
 .table-view > .virtual-flow > .scroll-bar:horizontal > .track-background {
     -fx-background-color: transparent;
 }
-.table-view > .virtual-flow > .scroll-bar > .increment-button, 
+.table-view > .virtual-flow > .scroll-bar > .increment-button,
 .table-view > .virtual-flow > .scroll-bar > .decrement-button {
     -fx-text-fill: white;
 }
@@ -261,7 +255,7 @@
     -fx-font-size: 12pt;
 }
 .jfx-layout-body, .jfx-layout-actions{
-    -fx-background-color: -fx-primary;   
+    -fx-background-color: -fx-primary;
 }
 .jfx-layout-body .label
 {
@@ -271,7 +265,7 @@
 
 
 /*Dashboard label*/
-.not-available 
+.not-available
 {
     -fx-background-radius: 5px;
     -fx-fill: derive(blue, 80%);
@@ -281,7 +275,7 @@
 /*Checkbox*/
 
 .checkbox-main{
-    -fx-text-fill: -fx-secondary; 
+    -fx-text-fill: -fx-secondary;
     -jfx-checked-color: -fx-primary;
     -fx-font-size: 10pt;
 }
@@ -307,3 +301,6 @@
     -fx-background-color: -fx-secondary;
     -fx-border-radius : 5px;
 }
+
+
+

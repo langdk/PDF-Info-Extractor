@@ -1,6 +1,9 @@
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.jfoenix.controls.*;
 import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
 import com.jfoenix.transitions.hamburger.HamburgerSlideCloseTransition;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -21,12 +24,20 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
+import org.apache.pdfbox.cos.COSArray;
+import org.apache.pdfbox.cos.COSFloat;
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.pdfbox.text.PDFTextStripperByArea;
 import org.nibor.autolink.LinkExtractor;
 import org.nibor.autolink.LinkSpan;
 import org.nibor.autolink.LinkType;
 
+import java.awt.geom.Rectangle2D;
 import java.io.*;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -61,9 +72,9 @@ public class MainController implements Initializable {
     private ExtractIdentifiers extractIdentifiers = new ExtractIdentifiers();
 
     Helper helper = new Helper();
-    private List<String> emailAddress = new ArrayList<>();
-    private List<String> websites = new ArrayList<>();
-    private List<String> phoneNumbers = new ArrayList<>();
+    List<String> emailAddress = new ArrayList<>();
+    List<String> websites = new ArrayList<>();
+    List<String> phoneNumbers = new ArrayList<>();
     public ObservableList<MainInformationItems> data = FXCollections.observableArrayList();
 
     @Override
@@ -116,34 +127,13 @@ public class MainController implements Initializable {
                 });
             }
         });
-        initDrawer();
 
 
 
-    }
-
-    private void initDrawer() {
-        try {
-            VBox toolbar = FXMLLoader.load(getClass().getResource("ButtonToolbar.fxml"));
-            drawer.setSidePane(toolbar);
-            drawer.setDefaultDrawerSize(150);
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-        HamburgerSlideCloseTransition task = new HamburgerSlideCloseTransition(hamburger);
-        task.setRate(-1);
-        hamburger.addEventHandler(MouseEvent.MOUSE_CLICKED, (Event event) -> {
-
-            task.setRate(task.getRate() * -1);
-            task.play();
-            if (drawer.isClosed()) {
-                drawer.open();
-            } else {
-                drawer.close();
-            }
-        });
 
     }
+
+
 
 
     public void fileChooser(){
@@ -179,6 +169,7 @@ public class MainController implements Initializable {
             emailAddress = extractIdentifiers.eliminateDuplicates(emailAddress);
             websites = extractIdentifiers.eliminateDuplicates(websites);
             phoneNumbers = extractIdentifiers.eliminateDuplicates(phoneNumbers);
+            document.close();
         }catch (IOException e){
             e.printStackTrace();
         }
@@ -221,32 +212,107 @@ public class MainController implements Initializable {
     }
 
 
-    private TableColumn<ObservableList<StringProperty>, String> createColumn(
-            final int columnIndex, String columnTitle) {
-        TableColumn<ObservableList<StringProperty>, String> column = new TableColumn<>();
-        column.setPrefWidth(150);
-        String title;
-        if (columnTitle == null || columnTitle.trim().length() == 0) {
-            title = "Column " + (columnIndex + 1);  // DELETE??
-        } else {
-            title = columnTitle;
+
+
+    public void close(){
+        Platform.exit();
+    }
+
+    public void saveAs(){
+
+    }
+
+    public void reset(){
+        data.clear();
+        keyInfoTable.refresh();
+    }
+
+    public void extractHighlighted(){
+        List<String> highlightedText = new ArrayList<>();
+
+        try {
+            //for(int i =0; i<getHighlightedText().size(); i++){
+                System.out.println(getHighlightedText().entries());
+            //}
+        }catch (IOException e){
+            e.printStackTrace();
         }
-        column.setText(title);
-        column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ObservableList<StringProperty>, String>, ObservableValue<String>>() {
-            @Override
-            public ObservableValue<String> call(
-                    TableColumn.CellDataFeatures<ObservableList<StringProperty>, String> cellDataFeatures) {
-                ObservableList<StringProperty> values = cellDataFeatures.getValue();
-                if (columnIndex >= values.size()) {
-                    return new SimpleStringProperty("");
-                } else {
-                    return cellDataFeatures.getValue().get(columnIndex);
+
+    }
+
+    public Multimap<Integer, String> getHighlightedText() throws IOException {
+        ArrayList<String> highlightedTexts = new ArrayList<>();
+        //MultiMap<Integer, String> highlights = new HashMap<>();
+        Multimap<Integer, String> highlights = ArrayListMultimap.create();
+
+
+        // this is the in-memory representation of the PDF document.
+        // this will load a document from a file.
+        PDDocument document = PDDocument.load(selectedFile);
+        // this represents all pages in a PDF document.
+        List<PDPage> allPages = new ArrayList<>();
+        for(int i =0; i<document.getNumberOfPages();i++){
+            allPages.add(document.getPage(i));
+        }
+        // this represents a single page in a PDF document.
+        List<PDAnnotation> annotations;
+        for(int l =0; l<document.getNumberOfPages();l++) {
+            PDPage page = allPages.get(l);
+            // get  annotation dictionaries
+            annotations = page.getAnnotations();
+            for (int i = 0; i < annotations.size(); i++) {
+                // check subType
+                if (annotations.get(i).getSubtype().equals("Highlight")) {
+                    // extract highlighted text
+                    PDFTextStripperByArea stripperByArea = new PDFTextStripperByArea();
+
+                    COSArray quadsArray = (COSArray) annotations.get(i).getCOSObject().getDictionaryObject(COSName.getPDFName("QuadPoints"));
+                    String str = null;
+
+                    for (int j = 1, k = 0; j <= (quadsArray.size() / 8); j++) {
+
+                        COSFloat ULX = (COSFloat) quadsArray.get(0 + k);
+                        COSFloat ULY = (COSFloat) quadsArray.get(1 + k);
+                        COSFloat URX = (COSFloat) quadsArray.get(2 + k);
+                        COSFloat URY = (COSFloat) quadsArray.get(3 + k);
+                        COSFloat LLX = (COSFloat) quadsArray.get(4 + k);
+                        COSFloat LLY = (COSFloat) quadsArray.get(5 + k);
+                        COSFloat LRX = (COSFloat) quadsArray.get(6 + k);
+                        COSFloat LRY = (COSFloat) quadsArray.get(7 + k);
+
+                        k += 8;
+
+                        float ulx = ULX.floatValue() - 1;                           // upper left x.
+                        float uly = ULY.floatValue();                               // upper left y.
+                        float width = URX.floatValue() - LLX.floatValue();          // calculated by upperRightX - lowerLeftX.
+                        float height = URY.floatValue() - LLY.floatValue();         // calculated by upperRightY - lowerLeftY.
+
+                        PDRectangle pageSize = page.getMediaBox();
+                        uly = pageSize.getHeight() - uly;
+
+                        Rectangle2D.Float rectangle_2 = new Rectangle2D.Float(ulx, uly, width, height);
+                        stripperByArea.addRegion("highlightedRegion", rectangle_2);
+                        stripperByArea.extractRegions(page);
+                        String highlightedText = stripperByArea.getTextForRegion("highlightedRegion");
+
+                        if (j > 1) {
+                            str = str.concat(highlightedText);
+                        } else {
+                            str = highlightedText;
+                        }
+                    }
+                    //highlightedTexts.add(str);
+                    highlights.put(l,str);
                 }
             }
-        });
-        // width of column set to width of table / number of columns
-        column.setPrefWidth(800 / 6);
-        return column;
+        }
+        document.close();
+
+        return highlights;
+    }
+
+    public void customSearch(){
+
     }
 
 
