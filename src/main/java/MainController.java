@@ -22,6 +22,10 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.text.PDFTextStripperByArea;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.nibor.autolink.LinkExtractor;
 import org.nibor.autolink.LinkSpan;
 import org.nibor.autolink.LinkType;
@@ -237,7 +241,89 @@ public class MainController implements Initializable {
         Platform.exit();
     }
 
-    public void saveAs(){
+    public void saveAs() {
+        String[] columns = {"Page Numer", "E-mail Address", "Website"}; //Number of columns in tableview
+        int rowNum = 1;
+        Workbook workbook = new XSSFWorkbook();
+
+        CreationHelper createHelper = workbook.getCreationHelper();
+
+        Sheet sheet = workbook.createSheet("Main Information");
+
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerFont.setFontHeightInPoints((short) 14);
+        CellStyle headerCellStyle = workbook.createCellStyle();
+        headerCellStyle.setFont(headerFont);
+
+        Row headerRow = sheet.createRow(0);
+        for (int i =0; i<columns.length; i++){
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columns[i]);
+            cell.setCellStyle(headerCellStyle);
+        }
+
+        for (MainInformationItems items : mainData){
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(items.phone.getValue());
+            row.createCell(1).setCellValue(items.email.getValue());
+            row.createCell(2).setCellValue(items.website.get());
+        }
+        for (int i=0; i<columns.length; i++){
+            sheet.autoSizeColumn(i);
+        }
+        try {
+            FileOutputStream fileOut = new FileOutputStream("main-highlights.xlsx");
+            workbook.write(fileOut);
+            fileOut.close();
+
+            // Closing the workbook
+            workbook.close();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void saveHighlighted(){
+        String[] columns = {"Pages", "Highlighted Text"}; //Number of columns in tableview
+        int rowNum = 1;
+        Workbook workbook = new XSSFWorkbook();
+
+        CreationHelper createHelper = workbook.getCreationHelper();
+
+        Sheet sheet = workbook.createSheet("Highlighted Information");
+
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerFont.setFontHeightInPoints((short) 14);
+        CellStyle headerCellStyle = workbook.createCellStyle();
+        headerCellStyle.setFont(headerFont);
+
+        Row headerRow = sheet.createRow(0);
+        for (int i =0; i<columns.length; i++){
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columns[i]);
+            cell.setCellStyle(headerCellStyle);
+        }
+
+        for (HighlightedText items : highlightData){
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(items.page.getValue());
+            row.createCell(1).setCellValue(items.text.getValue());
+        }
+        for (int i=0; i<columns.length; i++){
+            sheet.autoSizeColumn(i);
+        }
+        try {
+            FileOutputStream fileOut = new FileOutputStream("text-highlights.xlsx");
+            workbook.write(fileOut);
+            fileOut.close();
+
+            // Closing the workbook
+            workbook.close();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
 
     }
 
