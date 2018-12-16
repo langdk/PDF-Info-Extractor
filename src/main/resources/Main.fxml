@@ -21,15 +21,14 @@
           <Menu mnemonicParsing="false" text="File">
             <items>
               <MenuItem mnemonicParsing="false" onAction="#close" text="Close" />
-                  <MenuItem mnemonicParsing="false" onAction="#saveAs" text="Export Main Information" />
-                  <MenuItem mnemonicParsing="false" onAction="#saveHighlighted" text="Export Highlighted Text" />
+                  <MenuItem fx:id="exportMainButton" disable="true" mnemonicParsing="false" onAction="#saveAs" text="Export Main Information" />
+                  <MenuItem fx:id="exportHighlightButton" disable="true" mnemonicParsing="false" onAction="#saveHighlighted" text="Export Highlighted Text" />
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="Edit">
             <items>
               <MenuItem mnemonicParsing="false" onAction="#reset" text="Reset Fields" />
-                  <MenuItem mnemonicParsing="false" onAction="#customSearch" text="Search Custom" />
-                  <MenuItem mnemonicParsing="false" onAction="#extractHighlighted" text="Extract Highlighted" />
+                  <MenuItem fx:id="customSearchButton" disable="true" mnemonicParsing="false" onAction="#customSearch" text="Search Custom" />
             </items>
           </Menu>
         </menus>
@@ -62,7 +61,7 @@
                   </JFXTabPane>
                </center>
             </BorderPane>
-            <JFXButton layoutX="760.0" layoutY="4.0" onAction="#extract" prefHeight="39.0" prefWidth="92.0" text="Extract" />
+            <JFXButton fx:id="extractButton" disable="true" layoutX="760.0" layoutY="4.0" onAction="#extract" prefHeight="39.0" prefWidth="92.0" text="Extract" />
             <Label layoutX="212.0" layoutY="9.0" text="Filter" textFill="#b2b2b2">
                <font>
                   <Font size="24.0" />

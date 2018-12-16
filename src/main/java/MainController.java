@@ -9,6 +9,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.stage.FileChooser;
@@ -46,23 +47,29 @@ public class MainController implements Initializable {
     @FXML
     JFXTextField input;
 
+    @FXML
+    JFXButton extractButton;
 
-    File selectedFile;
+    @FXML
+    MenuItem exportMainButton, exportHighlightButton, customSearchButton;
+
+    private File selectedFile;
     private final int TABLE_COLUMN_SIZE = 330;
 
     private ExtractIdentifiers extractIdentifiers = new ExtractIdentifiers();
-    Helper helper = new Helper();
-    List<String> emailAddress = new ArrayList<>();
-    List<String> websites = new ArrayList<>();
-    List<String> phoneNumbers = new ArrayList<>();
-    Multimap<String, String> highlights = ArrayListMultimap.create();
-    public ObservableList<MainInformationItems> mainData = FXCollections.observableArrayList();
-    public ObservableList<HighlightedText> highlightData = FXCollections.observableArrayList();
+    private Helper helper = new Helper();
+    private List<String> emailAddress = new ArrayList<>();
+    private List<String> websites = new ArrayList<>();
+    private List<String> phoneNumbers = new ArrayList<>();
+    private List<String> pageNum = new ArrayList<>();
+    private List<String> content = new ArrayList<>();
+    private ObservableList<MainInformationItems> mainData = FXCollections.observableArrayList();
+    private ObservableList<HighlightedText> highlightData = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
-        JFXTreeTableColumn<HighlightedText, String> page = new JFXTreeTableColumn<>("Pages");
+        JFXTreeTableColumn<HighlightedText, String> page = new JFXTreeTableColumn<>("Page");
         page.setPrefWidth(150);
         page.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<HighlightedText, String>, ObservableValue<String>>() {
             @Override
@@ -144,8 +151,24 @@ public class MainController implements Initializable {
         });
     }
 
+    /**
+     * Clears all entres
+     */
+    private void clearAll(){
+        emailAddress.clear();
+        websites.clear();
+        phoneNumbers.clear();
+        pageNum.clear();
+        content.clear();
+        mainData.clear();
+        highlightData.clear();
+    }
 
+    /**
+     * Allows user to pick a file
+     */
     public void fileChooser(){
+        clearAll();
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open PDF");
         fileChooser.getExtensionFilters().addAll(
@@ -157,12 +180,26 @@ public class MainController implements Initializable {
         }
         else {
             helper.slidingAlert("Failure","Invalid/no file was selected");
+            return;
         }
         extractHelper();
+        extractButton.setDisable(false);
+
+    }
+
+    /**
+     * Helper method to set button access after a file is loaded
+     */
+    private void setButtonsHelper(){
+        exportHighlightButton.setDisable(false);
+        exportMainButton.setDisable(false);
+        customSearchButton.setDisable(false);
     }
 
 
-
+    /**
+     * Helper method to extract phone, web, and email.
+     */
     private void extractHelper(){
         String pages;
         String [] results;
@@ -184,160 +221,44 @@ public class MainController implements Initializable {
         }
     }
 
+    /**
+     * Extracts information and populates table
+     */
     public void extract() {
+        extractHighlighted();
         populateMainTable();
+        setButtonsHelper();
     }
 
-    public void populateMainTable(){
-        for (int i =0; i<filler(); i++){
-            mainData.add(new MainInformationItems(emailAddress.get(i), phoneNumbers.get(i), websites.get(i)));
-        }
-        keyInfoTable.refresh();
-    }
 
-    public void populateHighlightTable(){
-        List<String> pages = new ArrayList<>();
-        List<String> text = new ArrayList<>();
+    /**
+     * Populates the highlight information table
+     */
+    private void populateHighlightTable(){
         try {
-            highlights = getHighlightedText();
+            getHighlightedText();
         } catch (IOException e){
             e.printStackTrace();
         }
-        pages.addAll(highlights.keys());
-        text.addAll(highlights.values());
-        for (int i = 0; i<highlights.size(); i++){
-        highlightData.add(new HighlightedText(pages.get(i), text.get(i)));
+        for (int i = 0; i<pageNum.size(); i++){
+
+            highlightData.add(new HighlightedText(pageNum.get(i), content.get(i)));
         }
         highlightTable.refresh();
     }
 
-    private int filler(){
-        int largest = getLargest();
-        for(int i = emailAddress.size(); i<largest; i++){
-            emailAddress.add("");
-        }
-        for(int i = websites.size(); i<largest; i++){
-            websites.add("");
-        }
-        for(int i = phoneNumbers.size(); i<largest; i++){
-            phoneNumbers.add("");
-        }
-        return largest;
-    }
-
-    private int getLargest(){
-        List <Integer> largest = new ArrayList<>();
-        largest.add(emailAddress.size());
-        largest.add(websites.size());
-        largest.add(phoneNumbers.size());
-
-        return Collections.max(largest);
-    }
-
-
-
-
-    public void close(){
-        Platform.exit();
-    }
-
-    public void saveAs() {
-        String[] columns = {"Page Numer", "E-mail Address", "Website"}; //Number of columns in tableview
-        int rowNum = 1;
-        Workbook workbook = new XSSFWorkbook();
-
-        CreationHelper createHelper = workbook.getCreationHelper();
-
-        Sheet sheet = workbook.createSheet("Main Information");
-
-        Font headerFont = workbook.createFont();
-        headerFont.setBold(true);
-        headerFont.setFontHeightInPoints((short) 14);
-        CellStyle headerCellStyle = workbook.createCellStyle();
-        headerCellStyle.setFont(headerFont);
-
-        Row headerRow = sheet.createRow(0);
-        for (int i =0; i<columns.length; i++){
-            Cell cell = headerRow.createCell(i);
-            cell.setCellValue(columns[i]);
-            cell.setCellStyle(headerCellStyle);
-        }
-
-        for (MainInformationItems items : mainData){
-            Row row = sheet.createRow(rowNum++);
-            row.createCell(0).setCellValue(items.phone.getValue());
-            row.createCell(1).setCellValue(items.email.getValue());
-            row.createCell(2).setCellValue(items.website.get());
-        }
-        for (int i=0; i<columns.length; i++){
-            sheet.autoSizeColumn(i);
-        }
-        try {
-            FileOutputStream fileOut = new FileOutputStream("main-highlights.xlsx");
-            workbook.write(fileOut);
-            fileOut.close();
-
-            // Closing the workbook
-            workbook.close();
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-    }
-
-    public void saveHighlighted(){
-        String[] columns = {"Pages", "Highlighted Text"}; //Number of columns in tableview
-        int rowNum = 1;
-        Workbook workbook = new XSSFWorkbook();
-
-        CreationHelper createHelper = workbook.getCreationHelper();
-
-        Sheet sheet = workbook.createSheet("Highlighted Information");
-
-        Font headerFont = workbook.createFont();
-        headerFont.setBold(true);
-        headerFont.setFontHeightInPoints((short) 14);
-        CellStyle headerCellStyle = workbook.createCellStyle();
-        headerCellStyle.setFont(headerFont);
-
-        Row headerRow = sheet.createRow(0);
-        for (int i =0; i<columns.length; i++){
-            Cell cell = headerRow.createCell(i);
-            cell.setCellValue(columns[i]);
-            cell.setCellStyle(headerCellStyle);
-        }
-
-        for (HighlightedText items : highlightData){
-            Row row = sheet.createRow(rowNum++);
-            row.createCell(0).setCellValue(items.page.getValue());
-            row.createCell(1).setCellValue(items.text.getValue());
-        }
-        for (int i=0; i<columns.length; i++){
-            sheet.autoSizeColumn(i);
-        }
-        try {
-            FileOutputStream fileOut = new FileOutputStream("text-highlights.xlsx");
-            workbook.write(fileOut);
-            fileOut.close();
-
-            // Closing the workbook
-            workbook.close();
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-
-    }
-
-    public void reset(){
-        mainData.clear();
-        keyInfoTable.refresh();
-    }
-
-    public void extractHighlighted(){
+    /**
+     * Extracts highlighted text from doc
+     */
+    private void extractHighlighted(){
         populateHighlightTable();
     }
 
-    Multimap<String, String> getHighlightedText() throws IOException {
-        Multimap<String, String> highlights = ArrayListMultimap.create();
+    /**
+     * Extracts highlighted text from document
+     * @throws IOException
+     */
+    private void getHighlightedText() throws IOException {
         String[] test = {};
         List<String> lines = new ArrayList<>();
         // this is the in-memory representation of the PDF document.
@@ -399,7 +320,8 @@ public class MainController implements Initializable {
                         test = str.split("\r?\n");
                         lines.addAll(Arrays.asList(test));
                         for (int m=0; m<lines.size(); m++){
-                            highlights.put(String.valueOf(l+1), lines.get(m));
+                            pageNum.add(String.valueOf(l+1));
+                            content.add(lines.get(m));
                         }
                     }
                     lines.clear();
@@ -407,7 +329,158 @@ public class MainController implements Initializable {
             }
         }
         document.close();
-        return highlights;
+    }
+
+    /**
+     * Populates the main information table
+     */
+    private void populateMainTable(){
+        for (int i =0; i<filler(); i++){
+            mainData.add(new MainInformationItems(emailAddress.get(i), phoneNumbers.get(i), websites.get(i)));
+        }
+        keyInfoTable.refresh();
+    }
+
+    /**
+     * Finds largest size of arraylist, and populates other arraylists will null value so tableView populates correctly.
+     * @return Size of largest arraylist
+     */
+    private int filler(){
+        int largest = getLargest();
+        for(int i = emailAddress.size(); i<largest; i++){
+            emailAddress.add("");
+        }
+        for(int i = websites.size(); i<largest; i++){
+            websites.add("");
+        }
+        for(int i = phoneNumbers.size(); i<largest; i++){
+            phoneNumbers.add("");
+        }
+        return largest;
+    }
+
+    /**
+     * Compares three arraylists and returns largest.
+     * @return Largest arraylist size
+     */
+    private int getLargest(){
+        List <Integer> largest = new ArrayList<>();
+        largest.add(emailAddress.size());
+        largest.add(websites.size());
+        largest.add(phoneNumbers.size());
+
+        return Collections.max(largest);
+    }
+
+    /**
+     * Closes stage
+     */
+    public void close(){
+        Platform.exit();
+    }
+
+    /**
+     * Saves to Excel sheet
+     */
+    public void saveAs() {
+        String[] columns = {"Phone Number", "E-mail Address", "Website"}; //Number of columns in tableview
+        int rowNum = 1;
+        Workbook workbook = new XSSFWorkbook();
+
+        CreationHelper createHelper = workbook.getCreationHelper();
+
+        Sheet sheet = workbook.createSheet("Main Information");
+
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerFont.setFontHeightInPoints((short) 14);
+        CellStyle headerCellStyle = workbook.createCellStyle();
+        headerCellStyle.setFont(headerFont);
+
+        Row headerRow = sheet.createRow(0);
+        for (int i =0; i<columns.length; i++){
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columns[i]);
+            cell.setCellStyle(headerCellStyle);
+        }
+
+        for (MainInformationItems items : mainData){
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(items.phone.getValue());
+            row.createCell(1).setCellValue(items.email.getValue());
+            row.createCell(2).setCellValue(items.website.get());
+        }
+        for (int i=0; i<columns.length; i++){
+            sheet.autoSizeColumn(i);
+        }
+        try {
+            FileOutputStream fileOut = new FileOutputStream("main-highlights.xlsx");
+            workbook.write(fileOut);
+            fileOut.close();
+
+            // Closing the workbook
+            workbook.close();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        helper.slidingAlert("Success", "File created successfully!");
+    }
+
+    /**
+     * Saves as excel sheet
+     */
+    public void saveHighlighted(){
+        String[] columns = {"Pages", "Highlighted Text"}; //Number of columns in tableview
+        int rowNum = 1;
+        Workbook workbook = new XSSFWorkbook();
+
+        CreationHelper createHelper = workbook.getCreationHelper();
+
+        Sheet sheet = workbook.createSheet("Highlighted Information");
+
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerFont.setFontHeightInPoints((short) 14);
+        CellStyle headerCellStyle = workbook.createCellStyle();
+        headerCellStyle.setFont(headerFont);
+
+        Row headerRow = sheet.createRow(0);
+        for (int i =0; i<columns.length; i++){
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columns[i]);
+            cell.setCellStyle(headerCellStyle);
+        }
+
+        for (HighlightedText items : highlightData){
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(String.valueOf(items.page.getValue()));
+            row.createCell(1).setCellValue(items.text.getValue());
+        }
+        for (int i=0; i<columns.length; i++){
+            sheet.autoSizeColumn(i);
+        }
+        try {
+            FileOutputStream fileOut = new FileOutputStream("text-highlights.xlsx");
+            workbook.write(fileOut);
+            fileOut.close();
+
+            // Closing the workbook
+            workbook.close();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+        helper.slidingAlert("Success", "File created successfully!");
+
+    }
+
+    /**
+     * Resets all the fields
+     */
+    public void reset(){
+        clearAll();
+        keyInfoTable.refresh();
+        highlightTable.refresh();
     }
 
 
@@ -415,22 +488,11 @@ public class MainController implements Initializable {
 
     }
 
-
-
-    private void write(String[] itemToWrite) {
-        try {
-            PrintWriter printWriter = new PrintWriter("test3.txt");
-            for (int i =0; i<itemToWrite.length;i++){
-                printWriter.println(itemToWrite[i]);
-            }
-            printWriter.close();
-
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-    }
-
-
+    /**
+     * Extracts website information
+     * @param info The list passed in to search from
+     * @return A list of websites
+     */
     private List<String> extractWebsite(List<String> info){
         LinkExtractor linkExtractor = LinkExtractor.builder()
                 .linkTypes(EnumSet.of(LinkType.URL, LinkType.WWW))
@@ -443,6 +505,12 @@ public class MainController implements Initializable {
         });
         return websites;
     }
+
+    /**
+     * Extracts email information
+     * @param info The list passed in to search from
+     * @return A list of emails
+     */
     private List<String> extractEmail(List<String> info){
 
         LinkExtractor linkExtractor = LinkExtractor.builder()
