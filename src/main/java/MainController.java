@@ -2,26 +2,15 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.jfoenix.controls.*;
 import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
-import com.jfoenix.transitions.hamburger.HamburgerSlideCloseTransition;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.Event;
-import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.TableColumn;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import org.apache.pdfbox.cos.COSArray;
@@ -48,38 +37,43 @@ public class MainController implements Initializable {
 
 
     @FXML
-    JFXTextField pdfPath;
-
-    @FXML
-    JFXTreeTableView keyInfoTable;
+    JFXTreeTableView keyInfoTable, highlightTable;
 
     @FXML
     JFXTextField input;
-
-    @FXML
-    JFXHamburger hamburger;
-
-    @FXML
-    JFXDrawer drawer;
-
-
-
 
 
     File selectedFile;
     private final int TABLE_COLUMN_SIZE = 330;
 
     private ExtractIdentifiers extractIdentifiers = new ExtractIdentifiers();
-
     Helper helper = new Helper();
     List<String> emailAddress = new ArrayList<>();
     List<String> websites = new ArrayList<>();
     List<String> phoneNumbers = new ArrayList<>();
-    public ObservableList<MainInformationItems> data = FXCollections.observableArrayList();
+    Multimap<String, String> highlights = ArrayListMultimap.create();
+    public ObservableList<MainInformationItems> mainData = FXCollections.observableArrayList();
+    public ObservableList<HighlightedText> highlightData = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
+        JFXTreeTableColumn<HighlightedText, String> page = new JFXTreeTableColumn<>("Pages");
+        page.setPrefWidth(150);
+        page.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<HighlightedText, String>, ObservableValue<String>>() {
+            @Override
+            public ObservableValue<String> call(TreeTableColumn.CellDataFeatures<HighlightedText, String> param) {
+                return param.getValue().getValue().page;
+            }
+        });
+        JFXTreeTableColumn<HighlightedText, String> text = new JFXTreeTableColumn<>("Text");
+        text.setPrefWidth(850);
+        text.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<HighlightedText, String>, ObservableValue<String>>() {
+            @Override
+            public ObservableValue<String> call(TreeTableColumn.CellDataFeatures<HighlightedText, String> param) {
+                return param.getValue().getValue().text;
+            }
+        });
 
         JFXTreeTableColumn<MainInformationItems, String> email = new JFXTreeTableColumn<>("Emails");
         email.setPrefWidth(TABLE_COLUMN_SIZE);
@@ -107,8 +101,11 @@ public class MainController implements Initializable {
                 return param.getValue().getValue().website;
             }
         });
-
-        final TreeItem<MainInformationItems> root = new RecursiveTreeItem<MainInformationItems>(data, RecursiveTreeObject::getChildren);
+        final TreeItem<HighlightedText> root1 = new RecursiveTreeItem<>(highlightData, RecursiveTreeObject::getChildren);
+        final TreeItem<MainInformationItems> root = new RecursiveTreeItem<MainInformationItems>(mainData, RecursiveTreeObject::getChildren);
+        highlightTable.getColumns().setAll(page, text);
+        highlightTable.setRoot(root1);
+        highlightTable.setShowRoot(false);
         keyInfoTable.getColumns().setAll(email, phoneNumbers, website);
         keyInfoTable.setRoot(root);
         keyInfoTable.setShowRoot(false);
@@ -128,12 +125,20 @@ public class MainController implements Initializable {
             }
         });
 
-
-
-
+        input.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                highlightTable.setPredicate(new Predicate<TreeItem<HighlightedText>>() {
+                    @Override
+                    public boolean test(TreeItem<HighlightedText> treeItem) {
+                        Boolean flag = treeItem.getValue().page.getValue().contains(newValue)
+                                || treeItem.getValue().text.getValue().contains(newValue);
+                        return flag;
+                    }
+                });
+            }
+        });
     }
-
-
 
 
     public void fileChooser(){
@@ -176,16 +181,30 @@ public class MainController implements Initializable {
     }
 
     public void extract() {
-        populateTable();
+        populateMainTable();
     }
 
-    public void populateTable(){
-
+    public void populateMainTable(){
         for (int i =0; i<filler(); i++){
-
-            data.add(new MainInformationItems(emailAddress.get(i), phoneNumbers.get(i), websites.get(i)));
+            mainData.add(new MainInformationItems(emailAddress.get(i), phoneNumbers.get(i), websites.get(i)));
         }
         keyInfoTable.refresh();
+    }
+
+    public void populateHighlightTable(){
+        List<String> pages = new ArrayList<>();
+        List<String> text = new ArrayList<>();
+        try {
+            highlights = getHighlightedText();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        pages.addAll(highlights.keys());
+        text.addAll(highlights.values());
+        for (int i = 0; i<highlights.size(); i++){
+        highlightData.add(new HighlightedText(pages.get(i), text.get(i)));
+        }
+        highlightTable.refresh();
     }
 
     private int filler(){
@@ -223,29 +242,18 @@ public class MainController implements Initializable {
     }
 
     public void reset(){
-        data.clear();
+        mainData.clear();
         keyInfoTable.refresh();
     }
 
     public void extractHighlighted(){
-        List<String> highlightedText = new ArrayList<>();
-
-        try {
-            //for(int i =0; i<getHighlightedText().size(); i++){
-                System.out.println(getHighlightedText().entries());
-            //}
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-
+        populateHighlightTable();
     }
 
-    public Multimap<Integer, String> getHighlightedText() throws IOException {
-        ArrayList<String> highlightedTexts = new ArrayList<>();
-        //MultiMap<Integer, String> highlights = new HashMap<>();
-        Multimap<Integer, String> highlights = ArrayListMultimap.create();
-
-
+    Multimap<String, String> getHighlightedText() throws IOException {
+        Multimap<String, String> highlights = ArrayListMultimap.create();
+        String[] test = {};
+        List<String> lines = new ArrayList<>();
         // this is the in-memory representation of the PDF document.
         // this will load a document from a file.
         PDDocument document = PDDocument.load(selectedFile);
@@ -301,15 +309,21 @@ public class MainController implements Initializable {
                             str = highlightedText;
                         }
                     }
-                    //highlightedTexts.add(str);
-                    highlights.put(l,str);
+                    if(str!=null) {
+                        test = str.split("\r?\n");
+                        lines.addAll(Arrays.asList(test));
+                        for (int m=0; m<lines.size(); m++){
+                            highlights.put(String.valueOf(l+1), lines.get(m));
+                        }
+                    }
+                    lines.clear();
                 }
             }
         }
         document.close();
-
         return highlights;
     }
+
 
     public void customSearch(){
 
@@ -330,11 +344,6 @@ public class MainController implements Initializable {
         }
     }
 
-    private void printLists(){
-        helper.printList(emailAddress);
-        helper.printList(websites);
-        helper.printList(phoneNumbers);
-    }
 
     private List<String> extractWebsite(List<String> info){
         LinkExtractor linkExtractor = LinkExtractor.builder()
@@ -361,29 +370,4 @@ public class MainController implements Initializable {
         });
         return emailAddress;
     }
-
-//    public void extractSinglePageEachTime(){
-//        HashMap<Integer, String> pageInfo = new HashMap<>();
-//        String pages;
-//        String info;
-//        int occurrences = 0;
-//        String [] results = {};
-//        try {
-//            PDDocument document = PDDocument.load(selectedFile);
-//            PDFTextStripper pdfTextStripper = new PDFTextStripper();
-//            for (int i = 0; i<document.getNumberOfPages(); i++){
-//                pdfTextStripper.setStartPage(i);
-//                pdfTextStripper.setEndPage(i);
-//                pages = pdfTextStripper.getText(document);
-//                results = pages.split("\\s+");
-//                for (int j =0; j<results.length; j++){
-//                    extractIdentifiers.extractManufacture(results);
-//                }
-//            }
-//        } catch (IOException e){
-//            e.printStackTrace();
-//        }
-//    }
-
-
 }

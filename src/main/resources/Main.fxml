@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.jfoenix.controls.JFXButton?>
-<?import com.jfoenix.controls.JFXDrawer?>
 <?import com.jfoenix.controls.JFXTabPane?>
 <?import com.jfoenix.controls.JFXTextField?>
 <?import com.jfoenix.controls.JFXTreeTableView?>
@@ -49,12 +48,13 @@
                               </AnchorPane>
                            </content>
                         </Tab>
-                        <Tab text="Highlighted Information">
+                        <Tab fx:id="highlightTab" text="Highlighted Information">
                            <content>
                               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                  <children>
-                                    <JFXTreeTableView AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                 </children></AnchorPane>
+                                    <JFXTreeTableView fx:id="highlightTable" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                 </children>
+                              </AnchorPane>
                            </content>
                         </Tab>
                      </tabs>
@@ -69,11 +69,6 @@
             </Label>
             <JFXTextField fx:id="input" layoutX="289.0" prefHeight="37.0" prefWidth="348.0" />
             <JFXButton layoutX="662.0" layoutY="4.0" onAction="#fileChooser" prefHeight="27.0" prefWidth="92.0" text="Open File" />
-            <AnchorPane prefHeight="298.0" prefWidth="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="100.0">
-               <children>
-                  <JFXDrawer fx:id="drawer" alignment="TOP_RIGHT" direction="RIGHT" layoutX="209.0" overLayVisible="false" prefHeight="42.0" prefWidth="0.0" resizeContent="true" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-               </children>
-            </AnchorPane>
          </children>
       </AnchorPane>
    </children>
