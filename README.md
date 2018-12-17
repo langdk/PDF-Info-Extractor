@@ -11,6 +11,6 @@ To download and run the program:
 + Click on app folder
 + Click on project-jfx jar file 
 
-To make this I used a css template by Afsal Villan, Apache PDFBox library, and Auto-link. 
+Project was made with Jfoenix material design library/ControlsFX, css template by Afsan Villan. PDF extraction used Apache PDFbox, and Auto-Link (https://github.com/robinst/autolink-java).
   
   
