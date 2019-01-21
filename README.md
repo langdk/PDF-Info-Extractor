@@ -1,7 +1,7 @@
 # PDF Info Extractor
 
 This program extracts e-mail addresses, phone numbers, websites, and highlighted text from PDF documents. 
-Information is displayed in a table, and can then be imported to excel documents. 
+Information is displayed in a table, and can then be imported to excel documents. Created as Upwork project for D'Argent Companies.
 
 To download and run the program:
 + Download Zip
